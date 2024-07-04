@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #define _MAX 1000
 using namespace std;
-
 
 class Data {
 private:
@@ -110,11 +110,10 @@ bool Data::dataValida() {
 void Data::leData() {
     int dia, mes, ano;
     printf("dd/mm/aaaa: ");
-  int result = scanf("%i/%i/%i", &dia, &mes, &ano);
-  if (result != 3) {
-      printf("Formato invalido!\n");
-      
-  } // fim de 
+    int result = scanf("%i/%i/%i", &dia, &mes, &ano);
+    if (result != 3) {
+        printf("Formato invalido!\n");
+    }
     setData(dia, mes, ano);
 } // fim de leData
 
@@ -122,32 +121,29 @@ void Data::escreveData() {
     printf("%02i/%02i/%04i", getDia(), getMes(), getAno());
 } // fim de escreveData
 
-bool Data::verificaMes(int mes){
+bool Data::verificaMes(int mes) {
     if (this->mes == mes) {
         return true;
     } else {
         return false;
     }
-    } // fim de verificaMes
-
+} // fim de verificaMes
 
 class Pessoa {
 private:
     string nome;
     Data dataNascimento;
-    static int quantidade;
 public:
+    virtual ~Pessoa() {} // Destrutor virtual
     void setNome(string);
     string getNome();
     bool setNascimento(int dia, int mes, int ano);
     Data getNascimento();
     void leNome();
     void escreveNome();
-    void lePessoa();
-    void escrevePessoa();
+    virtual void lePessoa();
+    virtual void escrevePessoa();
 };
-
-int Pessoa::quantidade = 0;
 
 void Pessoa::setNome(string nome) {
     this->nome = nome;
@@ -192,81 +188,77 @@ void Pessoa::escrevePessoa() {
     dataNascimento.escreveData();
 } // fim de escrevePessoa
 
-// Função para cadastrar uma nova pessoa
-void cadastrarPessoa(Pessoa* pessoas[], int& quantidade) {
-    if (quantidade >= _MAX) {
-        cout << "Cadastro não realizado. Número máximo de pessoas atingido.\n";
-        return;
-    }
-    pessoas[quantidade] = new Pessoa();
-    pessoas[quantidade]->lePessoa();
-    quantidade++;
-} // fim de cadastrarPessoa
-
-// Função para listar todas as pessoas cadastradas
-void listarPessoas(Pessoa* pessoas[], int quantidade) {
-    for (int i = 0; i < quantidade; i++) {
-        cout << "\nPessoa " << (i + 1) << ":";
-        pessoas[i]->escrevePessoa();
-        cout << endl;
-    }
-} // fim de listarPessoas
-
-// Função para listar os aniversariantes do mês
-void listarAniversariantesDoMes(Pessoa* pessoas[], int quantidade, int mes) {
-    for (int i = 0; i < quantidade; i++) {
-        if (pessoas[i]->getNascimento().getMes() == mes) {
-            pessoas[i]->escrevePessoa();
-            cout << endl;
-        }
-    }
-} // fim de listarAniversariantesDoMes
-
-
-class Aluno : public Pessoa
-{
-    private:
+class Aluno : public Pessoa {
+private:
     int matricula;
-    public:
+public:
     static int quantidade;
-    void setMatricula(int matricula);
-    int getMatricula();
-    Aluno(){
+    Aluno() {
         quantidade++;
     }
+    virtual ~Aluno() {} // Destrutor virtual
+    void setMatricula(int matricula);
+    int getMatricula();
+    void lePessoa() override; // override para garantir que a função lePessoa seja a que está na classe Aluno
+    void escrevePessoa() override; // override para garantir que a função escrevePessoa seja a que está na classe Aluno
 };
 
 int Aluno::quantidade = 0;
 
-
-void Aluno::setMatricula(int matricula){
+void Aluno::setMatricula(int matricula) {
     this->matricula = matricula;
 }
-int Aluno::getMatricula(){
+
+int Aluno::getMatricula() {
     return matricula;
 }
 
-class Professor : public Pessoa
-{
-    private:
+void Aluno::lePessoa() {
+    Pessoa::lePessoa();
+    cout << "\nMatricula: ";
+    cin >> matricula;
+}
+
+void Aluno::escrevePessoa() {
+    Pessoa::escrevePessoa();
+    cout << "\nMatricula: " << matricula;
+}
+
+class Professor : public Pessoa {
+private:
     string titulacao;
-    public:
+public:
     static int quantidade;
-    void setTitulacao(string titulacao);
-    string getTitulacao();
-    Professor(){
+    Professor() {
         quantidade++;
     }
+    virtual ~Professor() {} // Destrutor virtual
+    void setTitulacao(string titulacao);
+    string getTitulacao();
+    void lePessoa() override; // override para garantir que a função lePessoa seja a que está na classe Professor
+    void escrevePessoa() override; // override para garantir que a função escrevePessoa seja a que está na classe Professor
 };
 
 int Professor::quantidade = 0;
 
-void Professor::setTitulacao(string titulacao){
+void Professor::setTitulacao(string titulacao) {
     this->titulacao = titulacao;
 }
 
-string Professor::getTitulacao(){
+string Professor::getTitulacao() {
     return titulacao;
+}
+
+void Professor::lePessoa() {
+    Pessoa::lePessoa();
+    cout << "\nTitulacao: ";
+    cin.ignore();
+    getline(cin, titulacao);
+}
+
+void Professor::escrevePessoa() {
+    Pessoa::escrevePessoa();
+    cout << "\nTitulacao: " << titulacao;
 }
 
 // Função para cadastrar um novo aluno
@@ -286,6 +278,7 @@ void cadastrarProfessor(Professor* professores[], int& quantidade) {
 // Função para listar todos os alunos cadastrados
 void listarAlunos(Aluno* alunos[], int quantidade) {
     for (int i = 0; i < quantidade; i++) {
+        cout << "Aluno " << (i + 1) << ":\n";
         alunos[i]->escrevePessoa();
         cout << endl;
     }
@@ -294,13 +287,144 @@ void listarAlunos(Aluno* alunos[], int quantidade) {
 // Função para listar todos os professores cadastrados
 void listarProfessores(Professor* professores[], int quantidade) {
     for (int i = 0; i < quantidade; i++) {
+        cout << "Professor " << (i + 1) << ":\n";
         professores[i]->escrevePessoa();
         cout << endl;
     }
 } // fim de listarProfessores
 
+// Função para listar os aniversariantes do mês
+void listarAniversariantesDoMes(Pessoa* pessoas[], int quantidade, int mes) {
+    for (int i = 0; i < quantidade; i++) {
+        if (pessoas[i]->getNascimento().getMes() == mes) {
+            pessoas[i]->escrevePessoa();
+            cout << endl;
+        }
+    }
+} // fim de listarAniversariantesDoMes
 
+// Função para alterar dados de um aluno
+void alterarAluno(Aluno* alunos[], int quantidade) {
+    int posicao;
+    listarAlunos(alunos, quantidade);
+    cout << "Digite a posição do aluno que deseja alterar: ";
+    cin >> posicao;
+    if (posicao >= 1 && posicao <= quantidade) {
+        alunos[posicao - 1]->lePessoa();
+    } else {
+        cout << "Posição inválida.\n";
+    }
+} // fim de alterarAluno
 
+// Função para alterar dados de um professor
+void alterarProfessor(Professor* professores[], int quantidade) {
+    int posicao;
+    listarProfessores(professores, quantidade);
+    cout << "Digite a posição do professor que deseja alterar: ";
+    cin >> posicao;
+    if (posicao >= 1 && posicao <= quantidade) {
+        professores[posicao - 1]->lePessoa();
+    } else {
+        cout << "Posição inválida.\n";
+    }
+} // fim de alterarProfessor
+
+// Função para excluir um aluno
+void excluirAluno(Aluno* alunos[], int& quantidade) {
+    int posicao;
+    listarAlunos(alunos, quantidade);
+    cout << "Digite a posição do aluno que deseja excluir: ";
+    cin >> posicao;
+    if (posicao >= 1 && posicao <= quantidade) {
+        delete alunos[posicao - 1];
+        for (int i = posicao - 1; i < quantidade - 1; i++) {
+            alunos[i] = alunos[i + 1];
+        }
+        quantidade--;
+    } else {
+        cout << "Posição inválida.\n";
+    }
+} // fim de excluirAluno
+
+// Função para excluir um professor
+void excluirProfessor(Professor* professores[], int& quantidade) {
+    int posicao;
+    listarProfessores(professores, quantidade);
+    cout << "Digite a posição do professor que deseja excluir: ";
+    cin >> posicao;
+    if (posicao >= 1 && posicao <= quantidade) {
+        delete professores[posicao - 1];
+        for (int i = posicao - 1; i < quantidade - 1; i++) {
+            professores[i] = professores[i + 1];
+        }
+        quantidade--;
+    } else {
+        cout << "Posição inválida.\n";
+    }
+} // fim de excluirProfessor
+
+// Função para exibir o submenu e retornar a opção escolhida pelo usuário
+int submenu() {
+    int opcao;
+    do {
+        cout << "\nSubmenu de Opções:";
+        cout << "\n0 - Retornar";
+        cout << "\n1 - Aluno";
+        cout << "\n2 - Professor";
+        cout << "\nEscolha uma opção: ";
+        cin >> opcao;
+        if (opcao < 0 || opcao > 2) {
+            cout << "Opção inválida. Tente novamente.\n";
+        }
+    } while (opcao < 0 || opcao > 2);
+    return opcao;
+} // fim de submenu
+
+// Função para carregar dados dos arquivos
+void carregarDados(Aluno* alunos[], Professor* professores[], int& quantidadeAlunos, int& quantidadeProfessores) {
+    ifstream arquivoAlunos("alunos.dat", ios::binary);
+    ifstream arquivoProfessores("professores.dat", ios::binary);
+
+    if (arquivoAlunos.is_open()) {
+        arquivoAlunos.read(reinterpret_cast<char*>(&quantidadeAlunos), sizeof(quantidadeAlunos));
+        for (int i = 0; i < quantidadeAlunos; i++) {
+            alunos[i] = new Aluno();
+            arquivoAlunos.read(reinterpret_cast<char*>(alunos[i]), sizeof(Aluno));
+        }
+        arquivoAlunos.close();
+    }
+
+    if (arquivoProfessores.is_open()) {
+        arquivoProfessores.read(reinterpret_cast<char*>(&quantidadeProfessores), sizeof(quantidadeProfessores));
+        for (int i = 0; i < quantidadeProfessores; i++) {
+            professores[i] = new Professor();
+            arquivoProfessores.read(reinterpret_cast<char*>(professores[i]), sizeof(Professor));
+        }
+        arquivoProfessores.close();
+    }
+} // fim de carregarDados
+
+// Função para salvar dados nos arquivos
+void salvarDados(Aluno* alunos[], Professor* professores[], int quantidadeAlunos, int quantidadeProfessores) {
+    ofstream arquivoAlunos("alunos.dat", ios::binary);
+    ofstream arquivoProfessores("professores.dat", ios::binary);
+
+    if (arquivoAlunos.is_open()) {
+        arquivoAlunos.write(reinterpret_cast<const char*>(&quantidadeAlunos), sizeof(quantidadeAlunos));
+        for (int i = 0; i < quantidadeAlunos; i++) {
+            arquivoAlunos.write(reinterpret_cast<const char*>(alunos[i]), sizeof(Aluno));
+        }
+        arquivoAlunos.close();
+    }
+
+    if (arquivoProfessores.is_open()) {
+        arquivoProfessores.write(reinterpret_cast<const char*>(&quantidadeProfessores), sizeof(quantidadeProfessores));
+        for (int i = 0; i < quantidadeProfessores; i++) {
+            arquivoProfessores.write(reinterpret_cast<const char*>(professores[i]), sizeof(Professor));
+        }
+        arquivoProfessores.close();
+    }
+} // fim de salvarDados
 
 // Função para exibir o menu e retornar a opção escolhida pelo usuário
 int menu() {
@@ -308,11 +432,11 @@ int menu() {
     do {
         cout << "\nMenu de Opções:";
         cout << "\n0 - Sair";
-        cout << "\n1 - Cadastrar um aluno";
-        cout << "\n2 - Cadastrar um professor";
-        cout << "\n3 - Listar alunos cadastrados";
-        cout << "\n4 - Listar professores cadastrados";
-        cout << "\n5 - Listar aniversariantes do mês (alunos e professores)";
+        cout << "\n1 - Cadastrar";
+        cout << "\n2 - Listar";
+        cout << "\n3 - Alterar";
+        cout << "\n4 - Excluir";
+        cout << "\n5 - Aniversariantes do mês";
         cout << "\nEscolha uma opção: ";
         cin >> opcao;
         if (opcao < 0 || opcao > 5) {
@@ -322,50 +446,90 @@ int menu() {
     return opcao;
 } // fim de menu
 
-
 int main() {
     Aluno* alunos[_MAX];
     Professor* professores[_MAX];
+    Pessoa* pessoas[_MAX];
     int quantidadeAlunos = 0;
     int quantidadeProfessores = 0;
+    int quantidadePessoas = 0;
     int opcao;
 
+    carregarDados(alunos, professores, quantidadeAlunos, quantidadeProfessores);
+    for (int i = 0; i < quantidadeAlunos; i++) {
+        pessoas[quantidadePessoas++] = alunos[i];
+    }
+    for (int i = 0; i < quantidadeProfessores; i++) {
+        pessoas[quantidadePessoas++] = professores[i];
+    }
+
     do {
-        opcao = menu();
-        switch (opcao) {
-        case 0:
-            cout << "Saindo...\n";
-            break;
-        case 1:
-            cadastrarAluno(alunos, quantidadeAlunos);
-            break;
-        case 2:
-            cadastrarProfessor(professores, quantidadeProfessores);
-            break;
-        case 3:
-            cout << "\nAlunos cadastrados:\n";
-            listarAlunos(alunos, quantidadeAlunos);
-            break;
-        case 4:
-            cout << "\nProfessores cadastrados:\n";
-            listarProfessores(professores, quantidadeProfessores);
-            break;
-        case 5: {
-            int mes;
-            cout << "Digite o mês: ";
-            cin >> mes;
-            if (mes >= 1 && mes <= 12) {
-                cout << "\nAniversariantes do mês " << mes << ":\n";
-                listarAniversariantesDoMes(reinterpret_cast<Pessoa**>(alunos), quantidadeAlunos, mes);
-                listarAniversariantesDoMes(reinterpret_cast<Pessoa**>(professores), quantidadeProfessores, mes);
-            } else {
-                cout << "Mês inválido. Tente novamente.\n";
+        try {
+            opcao = menu();
+            switch (opcao) {
+            case 0:
+                cout << "Saindo...\n";
+                salvarDados(alunos, professores, quantidadeAlunos, quantidadeProfessores);
+                break;
+            case 1: {
+                int subopcao = submenu();
+                if (subopcao == 1) {
+                    cadastrarAluno(alunos, quantidadeAlunos);
+                    pessoas[quantidadePessoas++] = alunos[quantidadeAlunos - 1];
+                } else if (subopcao == 2) {
+                    cadastrarProfessor(professores, quantidadeProfessores);
+                    pessoas[quantidadePessoas++] = professores[quantidadeProfessores - 1];
+                }
+                break;
             }
-            break;
-        }
-        default:
-            cout << "Opção inválida. Tente novamente.\n";
-            break;
+            case 2: {
+                int subopcao = submenu();
+                if (subopcao == 1) {
+                    cout << "\nAlunos cadastrados:\n";
+                    listarAlunos(alunos, quantidadeAlunos);
+                } else if (subopcao == 2) {
+                    cout << "\nProfessores cadastrados:\n";
+                    listarProfessores(professores, quantidadeProfessores);
+                }
+                break;
+            }
+            case 3: {
+                int subopcao = submenu();
+                if (subopcao == 1) {
+                    alterarAluno(alunos, quantidadeAlunos);
+                } else if (subopcao == 2) {
+                    alterarProfessor(professores, quantidadeProfessores);
+                }
+                break;
+            }
+            case 4: {
+                int subopcao = submenu();
+                if (subopcao == 1) {
+                    excluirAluno(alunos, quantidadeAlunos);
+                } else if (subopcao == 2) {
+                    excluirProfessor(professores, quantidadeProfessores);
+                }
+                break;
+            }
+            case 5: {
+                int mes;
+                cout << "Digite o mês: ";
+                cin >> mes;
+                if (mes >= 1 && mes <= 12) {
+                    cout << "\nAniversariantes do mês " << mes << ":\n";
+                    listarAniversariantesDoMes(pessoas, quantidadePessoas, mes);
+                } else {
+                    cout << "Mês inválido. Tente novamente.\n";
+                }
+                break;
+            }
+            default:
+                cout << "Opção inválida. Tente novamente.\n";
+                break;
+            }
+        } catch (bad_alloc& e) {
+            cout << "Erro de alocação de memória: " << e.what() << endl;
+            opcao = -1;
         }
     } while (opcao != 0);
 
